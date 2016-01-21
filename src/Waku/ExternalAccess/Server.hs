@@ -161,7 +161,7 @@ getAccessibleContent uuid = do
             ] 
          $ do
             content <- contentForEa ea
-            profiles <- bimapEitherT errForward id $ getPartialProfiles $ ProfileRequest $ participatingUsers content 
+            profiles <- bimapEitherT errForward id $ getPartialProfiles $ ProfileRequest $ externalAccessUserId : participatingUsers content 
             return $ ExternalContent content (DB.entityToModel ea) profiles
     where contentForEa (DB.ExternalAccess {..}) = getContent externalAccessCreatorId externalAccessContentId externalAccessContentType
 
