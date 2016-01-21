@@ -211,7 +211,7 @@
 
 - No response body
 
-## PUT /externals/:externalid/notify
+## POST /externals/:externalid/notify
 
 #### Captures:
 
@@ -234,7 +234,7 @@
 
 #### Response:
 
-- Status code 200
+- Status code 201
 - Headers: []
 
 - Supported content types are:

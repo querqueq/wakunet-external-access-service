@@ -39,6 +39,7 @@ import Waku.Clients.DiscussionClient
 import Waku.Clients.UserClient 
 import Waku.Clients.MailClient
 import Waku.Clients.ProfileClient
+import Waku.Clients.ChatClient
 import Waku.ExternalAccess.Database (runDb)
 import Waku.Servers.Util
 import Waku.Servers.Errors
@@ -61,6 +62,7 @@ server = createExternalAccess -- !
 
 getContent :: Id -> ContentId -> ContentType -> EitherT ServantErr IO Content
 getContent senderId cid "post" = bimapEitherT errForward ContentDiscussion $ getDiscussion (Just senderId) cid
+getContent senderId cid "chat" = bimapEitherT errForward ContentChatDescriptor $ getChatDescriptor (Just senderId) cid
 getContent _ _ _ = left $ err404
 
 createContent :: Id -> Content -> EitherT ServantErr IO Content
