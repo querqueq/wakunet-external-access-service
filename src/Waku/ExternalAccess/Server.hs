@@ -44,6 +44,8 @@ import Waku.Servers.Util
 import Waku.Servers.Errors
 import qualified Waku.ExternalAccess.Database as DB
 
+import Debug.Trace
+
 type AppM = ReaderT Config (EitherT ServantErr IO)
 
 server :: ServerT ExternalAccessAPI AppM
@@ -55,9 +57,8 @@ server = createExternalAccess -- !
     :<|> setAlias --
     :<|> revokeExternalAccess --
     :<|> getExternalAccessesForContent --
-    :<|> notifyExternalUser --
+    :<|> trace "before call" . notifyExternalUser --
 
--- TODO @UserService register must be callable by all users
 getContent :: Id -> ContentId -> ContentType -> EitherT ServantErr IO Content
 getContent senderId cid "post" = bimapEitherT errForward ContentDiscussion $ getDiscussion (Just senderId) cid
 getContent _ _ _ = left $ err404
@@ -75,12 +76,12 @@ selectExternalAccess (ExternalAccessRequest {..})= selectFirst
     where ckey = externalaccessrequestAccessibleContent
 
 -- | Create external access - TODO refactor this!
-createExternalAccess :: Maybe Id -> ExternalAccessRequest -> AppM ExternalAccessId
+createExternalAccess :: Maybe Id -> ExternalAccessRequest -> AppM AString
 createExternalAccess Nothing _ = forbidden
 createExternalAccess juid@(Just uid) ear@(ExternalAccessRequest {..}) = do
     duplicateEa <- runDb $ selectExternalAccess ear
     case duplicateEa of
-        (Just (Entity _ v)) -> return $ fromJust $ U.fromString $ DB.externalAccessUuid v
+        (Just (Entity _ v)) -> return $ AString $ DB.externalAccessUuid v
         Nothing -> do
             -- Check if an external access with email exists thus an user exists
             existingEa <- runDb $ selectFirst [DB.ExternalAccessEmail ==. externalaccessrequestEmail] []
@@ -105,7 +106,7 @@ createExternalAccess juid@(Just uid) ear@(ExternalAccessRequest {..}) = do
                         , DB.externalAccessContentType = contentType externalaccessrequestAccessibleContent
                         , DB.externalAccessLevel = externalaccessrequestLevel
                         }
-                    return uuid 
+                    return $ AString $ U.toString uuid 
     where 
         -- reuse user
         createUserId (Just (Entity _ x)) = return $ Right $ DB.externalAccessUserId x
@@ -201,12 +202,12 @@ notifyExternalUser :: Maybe Id -> U.UUID -> Url -> AppM ()
 notifyExternalUser Nothing _ _ = forbidden
 notifyExternalUser (Just sender) uuid (Url url) = do
     (DB.ExternalAccess {..}) <- selectMaybe [filterUuid uuid] id
-    lift $ bimapEitherT errForward id $ sendMail 
+    lift $ bimapEitherT errForward id $ trace "before send mail" $ sendMail 
          $ Mail [externalAccessEmail] "WakuNet - Zugriff auf" "external-access-de" 
          $ M.fromList [("url",pack url)
                       ,("thing",thing externalAccessContentType)
                       ]
-    return ()
+    return $ trace "end" ()
 
 thing "post" = "einer Diskussion"
 thing _ = "" -- FIXME what if content type is unknown?
