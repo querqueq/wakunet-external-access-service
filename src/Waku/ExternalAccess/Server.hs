@@ -74,7 +74,7 @@ selectExternalAccess (ExternalAccessRequest {..})= selectFirst
     ] []
     where ckey = externalaccessrequestAccessibleContent
 
--- | Create external access
+-- | Create external access - TODO refactor this!
 createExternalAccess :: Maybe Id -> ExternalAccessRequest -> AppM ExternalAccessId
 createExternalAccess Nothing _ = forbidden
 createExternalAccess juid@(Just uid) ear@(ExternalAccessRequest {..}) = do
@@ -110,8 +110,14 @@ createExternalAccess juid@(Just uid) ear@(ExternalAccessRequest {..}) = do
         -- reuse user
         createUserId (Just (Entity _ x)) = return $ Right $ DB.externalAccessUserId x
         -- create new user
-        createUserId Nothing = (liftM $ fmap userId) $ runEitherT $ registerUser juid $ sampleProfile 1 
+        createUserId Nothing = (liftM $ fmap userId) $ runEitherT $ registerUser juid $ profile uid (Just externalaccessrequestEmail)
         -- FIXME use profile generated from ea
+        profile userId email = defaultProfile 
+            { profileUserId = userId
+            , profileEmail = email
+            , profileFirstName = ""
+            , profileSurname = ""
+            }
 
 filterUuid uuid = DB.ExternalAccessUuid ==. U.toString uuid
 
