@@ -45,7 +45,7 @@ import Waku.Servers.Util
 import Waku.Servers.Errors
 import qualified Waku.ExternalAccess.Database as DB
 
-import Debug.Trace
+-- TODO add userID of external access to externalAccess, Call it userId
 
 type AppM = ReaderT Config (EitherT ServantErr IO)
 
@@ -58,7 +58,7 @@ server = createExternalAccess -- !
     :<|> setAlias --
     :<|> revokeExternalAccess --
     :<|> getExternalAccessesForContent --
-    :<|> trace "before call" . notifyExternalUser --
+    :<|> notifyExternalUser --
 
 getContent :: Id -> ContentId -> ContentType -> EitherT ServantErr IO Content
 getContent senderId cid "post" = bimapEitherT errForward ContentDiscussion $ getDiscussion (Just senderId) cid
@@ -176,11 +176,6 @@ postAccessibleContent uuid c = do
             ]
          $ (createContent (DB.externalAccessUserId ea) c) >> return ()
 
-require :: [(Bool,ServantErr)] -> EitherT ServantErr IO a -> EitherT ServantErr IO a
-require checks f = case foldl (\errs (x,err) -> if x then err:errs else errs) [] checks of
-    [] -> f
-    x:_ -> left x
-
 -- | FIXME check if an entity was updated. if none 404
 updateOne :: U.UUID -> [Update DB.ExternalAccess] -> AppM ()
 updateOne uuid updates = runDb $ updateWhere [filterUuid uuid] updates
@@ -193,6 +188,8 @@ revokeExternalAccess Nothing _ = forbidden
 revokeExternalAccess (Just sender) uuid = updateOne uuid [DB.ExternalAccessAccessRevoked =. False]
                         -- ^ FIXME check if sender is creator
 
+-- FIXME dont return revoed or expired accesses
+-- NOTE replace revoke (soft delete) with hard delete
 getExternalAccessesForContent :: Maybe Id -> ContentType -> ContentId -> AppM [ExternalAccess]
 getExternalAccessesForContent Nothing _ _ = forbidden
 getExternalAccessesForContent (Just sender) ct cid = runDb $ selectList 
@@ -204,12 +201,12 @@ notifyExternalUser :: Maybe Id -> U.UUID -> Url -> AppM ()
 notifyExternalUser Nothing _ _ = forbidden
 notifyExternalUser (Just sender) uuid (Url url) = do
     (DB.ExternalAccess {..}) <- selectMaybe [filterUuid uuid] id
-    lift $ bimapEitherT errForward id $ trace "before send mail" $ sendMail 
+    lift $ bimapEitherT errForward id $ sendMail 
          $ Mail [externalAccessEmail] "WakuNet - Zugriff auf" "external-access-de" 
          $ M.fromList [("url",pack url)
                       ,("thing",thing externalAccessContentType)
                       ]
-    return $ trace "end" ()
+    return ()
 
 thing "post" = "einer Diskussion"
 thing _ = "" -- FIXME what if content type is unknown?
