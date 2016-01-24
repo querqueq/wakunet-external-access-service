@@ -56,7 +56,7 @@ runDb query = do
     liftIO $ runSqlPool query pool
 
 entityToModel :: ExternalAccess -> M.ExternalAccess
-entityToModel (ExternalAccess {..}) = M.defaultExternalAccess
+entityToModel (ExternalAccess {..}) = M.ExternalAccess
     { M.externalaccessUuid = maybe U.nil id $ U.fromString externalAccessUuid
     , M.externalaccessCreatorId = externalAccessCreatorId
     , M.externalaccessEmail = externalAccessEmail
@@ -66,4 +66,5 @@ entityToModel (ExternalAccess {..}) = M.defaultExternalAccess
     , M.externalaccessAccessRevoked = externalAccessAccessRevoked
     , M.externalaccessAccessibleContent = ContentKey externalAccessContentId externalAccessContentType
     , M.externalaccessLevel = externalAccessLevel
+    , M.externalaccessUserId = externalAccessUserId
     }

@@ -45,8 +45,6 @@ import Waku.Servers.Util
 import Waku.Servers.Errors
 import qualified Waku.ExternalAccess.Database as DB
 
--- TODO add userID of external access to externalAccess, Call it userId
-
 type AppM = ReaderT Config (EitherT ServantErr IO)
 
 server :: ServerT ExternalAccessAPI AppM
@@ -118,8 +116,8 @@ createExternalAccess juid@(Just uid) ear@(ExternalAccessRequest {..}) = do
         profile userId email = defaultProfile 
             { profileUserId = userId
             , profileEmail = email
-            , profileFirstName = ""
-            , profileSurname = ""
+            , profileFirstName = Just ""
+            , profileSurname = Just ""
             }
 
 filterUuid uuid = DB.ExternalAccessUuid ==. U.toString uuid
@@ -181,7 +179,17 @@ updateOne :: U.UUID -> [Update DB.ExternalAccess] -> AppM ()
 updateOne uuid updates = runDb $ updateWhere [filterUuid uuid] updates
 
 setAlias :: U.UUID -> AString -> AppM ()
-setAlias uuid (AString alias) = updateOne uuid [DB.ExternalAccessAlias =. Just alias]
+setAlias uuid (AString alias) = do
+    ea <- runDb $ selectFirst [filterUuid uuid] []
+    case ea of
+        Nothing -> lift $ left err404
+        (Just (Entity k v)) ->  do
+            runDb $ update k [DB.ExternalAccessAlias =. Just alias]
+            lift $ bimapEitherT errForward id 
+                 $ updateProfile uid
+                 $ (emptyProfile uid) { profileFirstName = Just alias }
+            where uid = DB.externalAccessUserId v
+    return ()
 
 revokeExternalAccess :: Maybe Id -> U.UUID -> AppM ()
 revokeExternalAccess Nothing _ = forbidden
