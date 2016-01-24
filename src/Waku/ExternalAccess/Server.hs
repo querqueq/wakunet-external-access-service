@@ -193,7 +193,7 @@ setAlias uuid (AString alias) = do
 
 revokeExternalAccess :: Maybe Id -> U.UUID -> AppM ()
 revokeExternalAccess Nothing _ = forbidden
-revokeExternalAccess (Just sender) uuid = updateOne uuid [DB.ExternalAccessAccessRevoked =. False]
+revokeExternalAccess (Just sender) uuid = runDb $ deleteWhere [filterUuid uuid] -- updateOne uuid [DB.ExternalAccessAccessRevoked =. False]
                         -- ^ FIXME check if sender is creator
 
 -- FIXME dont return revoed or expired accesses
