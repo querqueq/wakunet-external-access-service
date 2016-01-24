@@ -209,7 +209,17 @@
 
     - `application/json`
 
-- No response body
+- A discussion
+
+```javascript
+{"subPostCount":2,"sticky":false,"text":"Hi there!","created":"2015-12-08T19:00:00Z","subPosts":[{"subPostCount":0,"sticky":false,"text":"Welcome to this group.","created":"2015-12-08T19:02:00Z","subPosts":[],"groupId":1,"id":2,"updated":null,"type":"fullPost","contentKey":{"contentId":0,"contentType":"post"},"creatorId":2,"parentPostId":1},{"subPostCount":0,"sticky":false,"text":"Thanks!","created":"2015-12-08T19:03:52Z","subPosts":[],"groupId":1,"id":3,"updated":null,"type":"fullPost","contentKey":{"contentId":0,"contentType":"post"},"creatorId":1,"parentPostId":1}],"groupId":1,"id":1,"updated":null,"type":"fullPost","contentKey":{"contentId":1,"contentType":"post"},"creatorId":1,"parentPostId":null}
+```
+
+- An event
+
+```javascript
+{"fromDate":"2015-12-23T17:00:00Z","allDay":false,"location":"Main building","participants":[2,3,6],"toDate":"2015-12-24T06:00:00Z","id":1,"title":"Xmas party","type":"PlainEvent","contentKey":{"contentId":1,"contentType":"event"},"description":"Friends and family welcome","creatorId":1}
+```
 
 ## POST /externals/:externalid/notify
 

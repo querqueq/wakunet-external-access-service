@@ -163,7 +163,7 @@ getAccessibleContent uuid = do
             return $ ExternalContent content (DB.entityToModel ea) profiles
     where contentForEa (DB.ExternalAccess {..}) = getContent externalAccessCreatorId externalAccessContentId externalAccessContentType
 
-postAccessibleContent :: U.UUID -> NewContent -> AppM ()
+postAccessibleContent :: U.UUID -> NewContent -> AppM Content
 postAccessibleContent uuid c = do
     now <- liftIO $ getCurrentTime
     ea@(DB.ExternalAccess {..}) <- selectMaybe [filterUuid uuid] id
@@ -172,7 +172,7 @@ postAccessibleContent uuid c = do
             ,(externalAccessAccessRevoked, errRevoked)
             ,(externalAccessLevel < Write, newErr 403 "write privileges required")
             ]
-         $ (createContent (DB.externalAccessUserId ea) externalAccessContentId c) >> return ()
+         $ (createContent (DB.externalAccessUserId ea) externalAccessContentId c)
 
 -- | FIXME check if an entity was updated. if none 404
 updateOne :: U.UUID -> [Update DB.ExternalAccess] -> AppM ()
