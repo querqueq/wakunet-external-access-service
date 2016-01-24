@@ -52,7 +52,7 @@
 - Response body as below.
 
 ```javascript
-[{"email":"john@example.org","accessibleContent":{"contentId":1,"contentType":"post"},"uuid":"1c012ed3-877d-44b8-87ac-eae9b1ef7b1b","accessRevoked":false,"created":"2015-12-08T19:00:00Z","expires":null,"alias":"John","level":"Read","creatorId":1}]
+[{"email":"john@example.org","accessibleContent":{"contentId":1,"contentType":"post"},"uuid":"1c012ed3-877d-44b8-87ac-eae9b1ef7b1b","accessRevoked":false,"created":"2015-12-08T19:00:00Z","expires":null,"alias":"John","userId":22,"level":"Read","creatorId":1}]
 ```
 
 ## DELETE /externals/:externalid
@@ -93,7 +93,7 @@
 - Response body as below.
 
 ```javascript
-{"email":"john@example.org","accessibleContent":{"contentId":1,"contentType":"post"},"uuid":"1c012ed3-877d-44b8-87ac-eae9b1ef7b1b","accessRevoked":false,"created":"2015-12-08T19:00:00Z","expires":null,"alias":"John","level":"Read","creatorId":1}
+{"email":"john@example.org","accessibleContent":{"contentId":1,"contentType":"post"},"uuid":"1c012ed3-877d-44b8-87ac-eae9b1ef7b1b","accessRevoked":false,"created":"2015-12-08T19:00:00Z","expires":null,"alias":"John","userId":22,"level":"Read","creatorId":1}
 ```
 
 ## POST /externals/:externalid
@@ -129,7 +129,7 @@
 - Response body as below.
 
 ```javascript
-{"email":"john@example.org","accessibleContent":{"contentId":1,"contentType":"post"},"uuid":"1c012ed3-877d-44b8-87ac-eae9b1ef7b1b","accessRevoked":false,"created":"2015-12-08T19:00:00Z","expires":null,"alias":"John","level":"Read","creatorId":1}
+{"email":"john@example.org","accessibleContent":{"contentId":1,"contentType":"post"},"uuid":"1c012ed3-877d-44b8-87ac-eae9b1ef7b1b","accessRevoked":false,"created":"2015-12-08T19:00:00Z","expires":null,"alias":"John","userId":22,"level":"Read","creatorId":1}
 ```
 
 ## POST /externals/:externalid/alias
@@ -179,7 +179,7 @@
 - Response body as below.
 
 ```javascript
-{"profiles":[{"email":null,"profilePicture":null,"state":null,"employedSince":null,"userId":1,"picture":null,"gender":null,"about":null,"firstName":"John","surname":"Doe"}],"externalAccess":{"email":"john@example.org","accessibleContent":{"contentId":1,"contentType":"post"},"uuid":"1c012ed3-877d-44b8-87ac-eae9b1ef7b1b","accessRevoked":false,"created":"2015-12-08T19:00:00Z","expires":null,"alias":"John","level":"Read","creatorId":1},"content":{"subPostCount":2,"text":"Hi there!","created":"2015-12-08T19:00:00Z","subPosts":[{"subPostCount":0,"text":"Welcome to this group.","created":"2015-12-08T19:02:00Z","subPosts":[],"groupId":1,"id":2,"updated":null,"type":"fullPost","contentKey":{"contentId":0,"contentType":"post"},"creatorId":2,"parentPostId":1},{"subPostCount":0,"text":"Thanks!","created":"2015-12-08T19:03:52Z","subPosts":[],"groupId":1,"id":3,"updated":null,"type":"fullPost","contentKey":{"contentId":0,"contentType":"post"},"creatorId":1,"parentPostId":1}],"groupId":1,"id":1,"updated":null,"type":"fullPost","contentKey":{"contentId":1,"contentType":"post"},"creatorId":1,"parentPostId":null}}
+{"profiles":[{"email":null,"profilePicture":null,"state":null,"employedSince":null,"userId":1,"gender":null,"about":null,"firstName":"John","surname":"Doe"}],"externalAccess":{"email":"john@example.org","accessibleContent":{"contentId":1,"contentType":"post"},"uuid":"1c012ed3-877d-44b8-87ac-eae9b1ef7b1b","accessRevoked":false,"created":"2015-12-08T19:00:00Z","expires":null,"alias":"John","userId":22,"level":"Read","creatorId":1},"content":{"subPostCount":2,"sticky":false,"text":"Hi there!","created":"2015-12-08T19:00:00Z","subPosts":[{"subPostCount":0,"sticky":false,"text":"Welcome to this group.","created":"2015-12-08T19:02:00Z","subPosts":[],"groupId":1,"id":2,"updated":null,"type":"fullPost","contentKey":{"contentId":0,"contentType":"post"},"creatorId":2,"parentPostId":1},{"subPostCount":0,"sticky":false,"text":"Thanks!","created":"2015-12-08T19:03:52Z","subPosts":[],"groupId":1,"id":3,"updated":null,"type":"fullPost","contentKey":{"contentId":0,"contentType":"post"},"creatorId":1,"parentPostId":1}],"groupId":1,"id":1,"updated":null,"type":"fullPost","contentKey":{"contentId":1,"contentType":"post"},"creatorId":1,"parentPostId":null}}
 ```
 
 ## POST /externals/:externalid/content
@@ -197,7 +197,7 @@
 - Example: `application/json`
 
 ```javascript
-{"subPostCount":2,"text":"Hi there!","created":"2015-12-08T19:00:00Z","subPosts":[{"subPostCount":0,"text":"Welcome to this group.","created":"2015-12-08T19:02:00Z","subPosts":[],"groupId":1,"id":2,"updated":null,"type":"fullPost","contentKey":{"contentId":0,"contentType":"post"},"creatorId":2,"parentPostId":1},{"subPostCount":0,"text":"Thanks!","created":"2015-12-08T19:03:52Z","subPosts":[],"groupId":1,"id":3,"updated":null,"type":"fullPost","contentKey":{"contentId":0,"contentType":"post"},"creatorId":1,"parentPostId":1}],"groupId":1,"id":1,"updated":null,"type":"fullPost","contentKey":{"contentId":1,"contentType":"post"},"creatorId":1,"parentPostId":null}
+{"text":"Hi there!","groupId":null,"parentPostId":13}
 ```
 
 #### Response:

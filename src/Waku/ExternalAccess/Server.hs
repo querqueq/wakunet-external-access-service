@@ -63,10 +63,10 @@ getContent senderId cid "post" = bimapEitherT errForward ContentDiscussion $ get
 getContent senderId cid "chat" = bimapEitherT errForward ContentChatDescriptor $ getChatDescriptor (Just senderId) cid
 getContent _ _ _ = left $ err404
 
-createContent :: Id -> Content -> EitherT ServantErr IO Content
-createContent senderId (ContentDiscussion disc) = bimapEitherT errForward ContentDiscussion 
-    $ createDiscussion (Just senderId) disc
-createContent _ _ = left $ err406 {errReasonPhrase = "content type not supported"}
+createContent :: Id -> ContentId -> NewContent -> EitherT ServantErr IO Content
+createContent senderId cid (NewContentDiscussion disc) = bimapEitherT errForward ContentDiscussion 
+    $ createDiscussion (Just senderId) $ disc { ndParentPostId = Just cid }
+createContent _ _ _ = left $ err406 {errReasonPhrase = "content type not supported"}
 
 selectExternalAccess (ExternalAccessRequest {..})= selectFirst 
     [DB.ExternalAccessEmail ==. externalaccessrequestEmail
@@ -163,16 +163,16 @@ getAccessibleContent uuid = do
             return $ ExternalContent content (DB.entityToModel ea) profiles
     where contentForEa (DB.ExternalAccess {..}) = getContent externalAccessCreatorId externalAccessContentId externalAccessContentType
 
-postAccessibleContent :: U.UUID -> Content -> AppM ()
+postAccessibleContent :: U.UUID -> NewContent -> AppM ()
 postAccessibleContent uuid c = do
     now <- liftIO $ getCurrentTime
     ea@(DB.ExternalAccess {..}) <- selectMaybe [filterUuid uuid] id
     lift $ require 
             [(maybe False (<now) externalAccessExpires, errExpired)
             ,(externalAccessAccessRevoked, errRevoked)
-            ,(externalAccessLevel >= Write, newErr 403 "write privileges required")
+            ,(externalAccessLevel < Write, newErr 403 "write privileges required")
             ]
-         $ (createContent (DB.externalAccessUserId ea) c) >> return ()
+         $ (createContent (DB.externalAccessUserId ea) externalAccessContentId c) >> return ()
 
 -- | FIXME check if an entity was updated. if none 404
 updateOne :: U.UUID -> [Update DB.ExternalAccess] -> AppM ()
