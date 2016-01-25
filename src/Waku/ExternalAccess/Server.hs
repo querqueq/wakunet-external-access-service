@@ -53,7 +53,7 @@ server = createExternalAccess
     :<|> getExternalAccess
     :<|> getAccessibleContent
     :<|> postAccessibleContent
-    :<|> undefined --setAlias
+    :<|> setAlias
     :<|> revokeExternalAccess
     :<|> getExternalAccessesForContent
     :<|> notifyExternalUser
