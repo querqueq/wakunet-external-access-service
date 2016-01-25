@@ -40,7 +40,7 @@ makePool Test = runNoLoggingT $ createSqlitePool ":memory:" 20
 makePool Development = runStdoutLoggingT $ createSqlitePool "waku-external-access-dev.db" 20
 makePool Heroku = do
     connStr <- herokuConnStr
-    pool <- runNoLoggingT $ createPostgresqlPool connStr (envPool Test)
+    pool <- runStdoutLoggingT $ createPostgresqlPool connStr (envPool Test)
     return pool
 
 envPool :: Environment -> Int
