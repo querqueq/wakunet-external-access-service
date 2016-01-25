@@ -205,6 +205,7 @@ getExternalAccessesForContent Nothing _ _ = forbidden
 getExternalAccessesForContent (Just sender) ct cid = runDb $ selectList 
     [DB.ExternalAccessContentId ==. cid
     ,DB.ExternalAccessContentType ==. ct
+    ,DB.ExternalAccessAccessRevoked ==. False
     ] [] >>= return . (map (\(Entity _ v) -> DB.entityToModel v))
 
 notifyExternalUser :: Maybe Id -> U.UUID -> Url -> AppM ()
