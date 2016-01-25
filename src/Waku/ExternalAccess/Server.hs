@@ -48,15 +48,15 @@ import qualified Waku.ExternalAccess.Database as DB
 type AppM = ReaderT Config (EitherT ServantErr IO)
 
 server :: ServerT ExternalAccessAPI AppM
-server = createExternalAccess -- !
-    :<|> updateExternalAccess --
-    :<|> getExternalAccess --
-    :<|> getAccessibleContent --
-    :<|> postAccessibleContent --
-    :<|> setAlias --
-    :<|> revokeExternalAccess --
-    :<|> getExternalAccessesForContent --
-    :<|> notifyExternalUser --
+server = createExternalAccess
+    :<|> updateExternalAccess
+    :<|> getExternalAccess
+    :<|> getAccessibleContent
+    :<|> postAccessibleContent
+    :<|> undefined --setAlias
+    :<|> revokeExternalAccess
+    :<|> getExternalAccessesForContent
+    :<|> notifyExternalUser
 
 getContent :: Id -> ContentId -> ContentType -> EitherT ServantErr IO Content
 getContent senderId cid "post" = bimapEitherT errForward ContentDiscussion $ getDiscussion (Just senderId) cid
@@ -81,7 +81,9 @@ createExternalAccess Nothing _ = forbidden
 createExternalAccess juid@(Just uid) ear@(ExternalAccessRequest {..}) = do
     duplicateEa <- runDb $ selectExternalAccess ear
     case duplicateEa of
-        (Just (Entity _ v)) -> return $ AString $ DB.externalAccessUuid v
+        (Just (Entity k v)) -> do
+            runDb $ update k [DB.ExternalAccessAccessRevoked =. False]
+            return $ AString $ DB.externalAccessUuid v
         Nothing -> do
             -- Check if an external access with email exists thus an user exists
             existingEa <- runDb $ selectFirst [DB.ExternalAccessEmail ==. externalaccessrequestEmail] []
@@ -141,7 +143,7 @@ updateExternalAccess _ uuid ear@(ExternalAccessRequest {..}) = do
     where ckey = externalaccessrequestAccessibleContent
 
 selectMaybe filters f = do
-    e <- runDb $ selectFirst filters []
+    e <- runDb $ selectFirst ((DB.ExternalAccessAccessRevoked ==. False) : filters) []
     case e of
         Nothing  -> lift $ left err404
         (Just (Entity _ v)) -> return $ f v
@@ -180,20 +182,20 @@ updateOne uuid updates = runDb $ updateWhere [filterUuid uuid] updates
 
 setAlias :: U.UUID -> AString -> AppM ()
 setAlias uuid (AString alias) = do
-    ea <- runDb $ selectFirst [filterUuid uuid] []
+    ea <- runDb $ selectFirst [filterUuid uuid, DB.ExternalAccessAccessRevoked ==. False] []
     case ea of
         Nothing -> lift $ left err404
-        (Just (Entity k v)) ->  do
+        (Just (Entity k v)) -> do
+            let uid = DB.externalAccessUserId v
             runDb $ update k [DB.ExternalAccessAlias =. Just alias]
-            lift $ bimapEitherT errForward id 
+            lift $ bimapEitherT errForward (\x -> ())
                  $ updateProfile uid
                  $ (emptyProfile uid) { profileFirstName = Just alias }
-            where uid = DB.externalAccessUserId v
-    return ()
 
 revokeExternalAccess :: Maybe Id -> U.UUID -> AppM ()
 revokeExternalAccess Nothing _ = forbidden
-revokeExternalAccess (Just sender) uuid = runDb $ deleteWhere [filterUuid uuid] -- updateOne uuid [DB.ExternalAccessAccessRevoked =. False]
+revokeExternalAccess (Just sender) uuid = updateOne uuid [DB.ExternalAccessAccessRevoked =. False]
+    -- runDb $ deleteWhere [filterUuid uuid]
                         -- ^ FIXME check if sender is creator
 
 -- FIXME dont return revoed or expired accesses
