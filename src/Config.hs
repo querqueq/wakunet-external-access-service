@@ -33,7 +33,7 @@ defaultConfig = Config
 setLogger :: Environment -> Middleware
 setLogger Test = id
 setLogger Development = logStdoutDev
-setLogger _ = logStdout
+setLogger _ = logStdoutDev
 
 makePool :: Environment -> IO ConnectionPool
 makePool Test = runNoLoggingT $ createSqlitePool ":memory:" 20 
